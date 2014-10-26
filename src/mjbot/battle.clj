@@ -9,9 +9,13 @@
 (defn start-timer []
   "/timer")
 
+(defn mega-evo? [side]
+  (if (:canMegaEvo (first (:pokemon side))) ;who wrote this code ps-side??
+    " mega"))
+
 (defn select-move [opts]
   (let [moves (:moves (get (:active opts) 0))]
-    (str "/choose move " (:move (rand-nth moves)) "|" (:rqid opts) "\n" (start-timer))))
+    (str "/choose move " (:move (rand-nth moves)) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
 
 (defn get-next-poke [pokemon rqid i]
   (if (first pokemon)
