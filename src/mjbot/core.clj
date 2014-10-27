@@ -7,4 +7,4 @@
   (println "Finishing battle"))
 
 (defn switch-debugging []
-  (reset! debugging (not debugging)))
+  (reset! debugging (not @debugging)))
