@@ -50,7 +50,7 @@
           	(send-msg "" (find-battle)))))))
 
 (defn parse-msg [msg]
-  (prn msg)
+  (if config/debugging (prn msg))
   (if (= ">" (subs msg 0 1))
     (let [smsg (string/split (subs msg 1) #"\r\n|\r|\n") ; i think ps only supports \n, but w/e
           room (first smsg)]
