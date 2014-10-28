@@ -1,4 +1,5 @@
 (ns mjbot.battle
+  (:use mjbot.data.data)
   (:require [clojure.string :as string]))
 
 (def wins (atom 0))
