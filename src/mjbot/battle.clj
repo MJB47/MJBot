@@ -1,6 +1,12 @@
 (ns mjbot.battle
   (:require [clojure.string :as string]))
 
+(def wins (atom 0))
+(def losses (atom 0))
+
+(defn update-score [me?]
+  (if me? (swap! wins inc) (swap! losses inc)))
+
 (defn find-battle []
   (let [team "/utm"
         tier "/search randombattle"]

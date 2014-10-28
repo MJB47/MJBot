@@ -29,6 +29,13 @@
           (println "Failed to login, exception is: " error)
           (handle-resp body))))))
 
+(defn handle-win [room smsg]
+  (send-msg room "Good Game")
+ 	(send-msg "" (str "/leave " room))
+  (update-score (if (= (nth smsg 2) config/user) true false))
+  (println (str "Score so far this session: " @wins "/" @losses))
+  (if @config/search-more (send-msg "" (find-battle)) (println "All Done!")))
+
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
     (if (= "|" (subs msg 0 1))
@@ -42,10 +49,7 @@
           (= type "init")
           	(if (= (nth smsg 2) "battle") (send-msg room "Good Luck and Have Fun"))
           (= type "win")
-          	(do 
-            	(send-msg room "Good Game")
-             	(send-msg "" (str "/leave " room))
-              (if @config/search-more (send-msg "" (find-battle)) (println "All Done!")))
+          	(handle-win room smsg)
           (= type "updateuser")
           	(if (= (nth smsg 2) config/user) (send-msg "" (find-battle))))))))
 
