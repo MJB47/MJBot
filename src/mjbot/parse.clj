@@ -47,7 +47,7 @@
              	(send-msg "" (str "/leave " room))
               (if @config/search-more (send-msg "" (find-battle)) (println "All Done!")))
           (= type "updateuser")
-          	(send-msg "" (find-battle)))))))
+          	(if (= (nth smsg 2) config/user) (send-msg "" (find-battle))))))))
 
 (defn parse-msg [msg]
   (if @config/debugging (prn msg))
