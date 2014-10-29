@@ -42,7 +42,7 @@
     (str "/choose move " (:move (rand-nth moves)) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
 
 (defn get-next-poke [pokemon rqid i]
-  (if (first pokemon)
+  (if (seq pokemon)
     (if-not (= (subs (:condition (first pokemon)) 0 1) "0")
       (str "/choose switch " i "|" rqid)
       (get-next-poke (rest pokemon) rqid (inc i)))))
