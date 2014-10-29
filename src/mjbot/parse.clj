@@ -37,8 +37,11 @@
   (println (str "Score so far this session: " @wins "/" @losses))
   (if @config/search-more? (send-msg "" (find-battle)) (System/exit 0)))
 
+(defn poke-to-id [poke]
+  (string/lower-case (string/replace poke #"[^\p{L}\p{Nd}]+" "")))
+
 (defn get-poke-from-switch [data]
-  (get (string/split data #",") 0))
+  (keyword (poke-to-id (get (string/split data #",") 0))))
 
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
@@ -59,7 +62,7 @@
           (= type "player")
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
            ;if its a switch message, check if its the opponent
-          (and (= type "switch") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
+          (and (= type (or "switch" "detailschange")) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
           	(reset! opp-poke (get-poke-from-switch (get smsg 3))))))))
 
 (defn parse-msg [msg]

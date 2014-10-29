@@ -33,13 +33,51 @@
 (defn start-timer []
   "/timer")
 
+;takes move id
+(defn move-type [move]
+  (keyword (:type ((keyword move) moves))))
+
+(defn move-power [move]
+  (* 
+    (:basePower ((keyword move) moves)) 
+    (or (:multiHit ((keyword move) moves)) 1))) ;lets be optimistic
+
+;returns nil if its not a status move
+(defn move-status [move]
+  (:status ((keyword move) moves)))
+
+(defn poke-type [poke i];0 or 1
+  (keyword (get (:types (poke pokedex)) i)))
+
+(defn off-effectiveness [type poke]
+  (* 
+    (type-to-eff (type (:damageTaken ((poke-type poke 0) types))))
+    (if (poke-type poke 1) (type-to-eff (type (:damageTaken ((poke-type poke 1) types)))) 1)))
+
+(defn off-power [move poke]
+  (*
+    (move-power move)
+    (off-effectiveness (move-type move) poke)))
+
+(defn best-move [cmoves]
+  (loop [m cmoves
+         best-name nil
+         best-power 0]
+    (if (seq m)
+      (if (< best-power (off-power (:id (first m)) @opp-poke))
+        (recur (rest m)
+               (:move (first m))
+               (off-power (:id (first m)) @opp-poke))
+        (recur (rest m) best-name best-power))
+      (or best-name (rand-nth cmoves)))))
+
 (defn mega-evo? [side]
   (if (:canMegaEvo (first (:pokemon side))) ;who wrote this code ps-side??
     " mega"))
 
 (defn select-move [opts]
-  (let [moves (:moves (get (:active opts) 0))]
-    (str "/choose move " (:move (rand-nth moves)) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
+  (let [cmoves (:moves (get (:active opts) 0))]
+    (str "/choose move " (if @opp-poke (best-move cmoves) (:move (rand-nth cmoves))) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
 
 (defn get-next-poke [pokemon rqid i]
   (if (seq pokemon)

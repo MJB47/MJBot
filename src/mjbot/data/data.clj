@@ -7,8 +7,15 @@
 (defn get-data [file]
   (json/read-str (slurp (str data-path file)) :key-fn keyword))
 
+; 0 = 1x, 1 = 2x, 2 = 0.5x, 3 = 0x
 (def types
   (get-data "types.json"))
+
+(defn type-to-eff [t]
+  (get {0 1 
+        1 2 
+        2 0.5 
+        3 0} t))
 
 (def moves
   (get-data "moves.json"))
