@@ -5,6 +5,19 @@
 (def wins (atom 0))
 (def losses (atom 0))
 
+(def who-am-i (atom nil))
+(def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
+
+(defn set-who-am-i [me]
+  (reset! who-am-i me))
+
+(defn set-opp-poke [poke]
+  (reset! opp-poke poke))
+
+(defn reset-state []
+  (reset! who-am-i nil)
+  (reset! opp-poke nil))
+
 (defn update-score [me?]
   (if me? (swap! wins inc) (swap! losses inc)))
 
