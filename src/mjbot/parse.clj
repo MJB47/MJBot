@@ -57,7 +57,7 @@
           (= type "updateuser")
           	(if (= (nth smsg 2) config/user) (send-msg "" (find-battle)))
           (= type "player")
-          	(if (= (nth smsg 3) config/user) (set-who-am-i (nth smsg 2)))
+          	(if (>= (count smsg) 4) (if (= (nth smsg 3) config/user) (set-who-am-i (nth smsg 2))))
            ;if its a switch message, check if its the opponent
           (and (= type "switch") (not (= (subs (nth smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
           	(reset! opp-poke (get-poke-from-switch (nth smsg 3))))))))
