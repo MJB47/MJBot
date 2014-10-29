@@ -35,7 +35,7 @@
   (update-score (if (= (nth smsg 2) config/user) true false))
   (reset-state)
   (println (str "Score so far this session: " @wins "/" @losses))
-  (if @config/search-more? (send-msg "" (find-battle)) (println "All Done!")))
+  (if @config/search-more? (send-msg "" (find-battle)) (System/exit 0)))
 
 (defn get-poke-from-switch [data]
   (nth (string/split data #",") 0))
