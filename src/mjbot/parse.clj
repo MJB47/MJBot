@@ -35,7 +35,7 @@
   (update-score (if (= (nth smsg 2) config/user) true false))
   (reset-state)
   (println (str "Score so far this session: " @wins "/" @losses))
-  (if @config/search-more (send-msg "" (find-battle)) (println "All Done!")))
+  (if @config/search-more? (send-msg "" (find-battle)) (println "All Done!")))
 
 (defn get-poke-from-switch [data]
   (nth (string/split data #",") 0))
@@ -63,7 +63,7 @@
           	(reset! opp-poke (get-poke-from-switch (nth smsg 3))))))))
 
 (defn parse-msg [msg]
-  (if @config/debugging (prn msg))
+  (if @config/debugging? (prn msg))
   (if (= ">" (subs msg 0 1))
     (let [smsg (string/split (subs msg 1) #"\r\n|\r|\n") ; i think ps only supports \n, but w/e
           room (first smsg)]

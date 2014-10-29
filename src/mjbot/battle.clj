@@ -1,6 +1,7 @@
 (ns mjbot.battle
   (:use mjbot.data.data)
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [mjbot.config :as config]))
 
 (def wins (atom 0))
 (def losses (atom 0))
@@ -25,6 +26,9 @@
   (let [team "/utm"
         tier "/search randombattle"]
     (string/join "\n" [team tier])))
+
+(defn psychological-warfare []
+  (if @config/bm? (rand-nth trash-talk)))
 
 (defn start-timer []
   "/timer")
@@ -53,4 +57,5 @@
     	(select-move opts)
     (:forceSwitch opts)
     	(switch (:side opts) (:rqid opts))
-    ))
+    (:wait opts)
+    	(psychological-warfare)))
