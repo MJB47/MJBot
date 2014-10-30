@@ -1,5 +1,6 @@
 (ns mjbot.battle
-  (:use mjbot.data.data)
+  (:use mjbot.data.data
+        mjbot.util)
   (:require [clojure.string :as string]
             [mjbot.config :as config]))
 
@@ -33,6 +34,9 @@
 (defn start-timer []
   "/timer")
 
+(defn active-poke [side]
+  (get-poke-from-details (:details (first (:pokemon side)))))
+
 ;takes move id
 (defn move-type [move]
   (keyword (:type ((keyword move) moves))))
@@ -54,20 +58,26 @@
     (type-to-eff (type (:damageTaken ((poke-type poke 0) types))))
     (if (poke-type poke 1) (type-to-eff (type (:damageTaken ((poke-type poke 1) types)))) 1)))
 
-(defn off-power [move poke]
+(defn stab [type side]
+  (if (= type (or (poke-type (active-poke side) 0) (poke-type (active-poke side) 1)))
+    1.5
+    1))
+
+(defn off-power [move poke side]
   (*
     (move-power move)
-    (off-effectiveness (move-type move) poke)))
+    (off-effectiveness (move-type move) poke)
+    (stab (move-type move) side)))
 
-(defn best-move [cmoves]
+(defn best-move [cmoves side]
   (loop [m cmoves
          best-name nil
          best-power 0]
     (if (seq m)
-      (if (< best-power (off-power (:id (first m)) @opp-poke))
+      (if (< best-power (off-power (:id (first m)) @opp-poke side))
         (recur (rest m)
                (:move (first m))
-               (off-power (:id (first m)) @opp-poke))
+               (off-power (:id (first m)) @opp-poke side))
         (recur (rest m) best-name best-power))
       (or best-name (:move (rand-nth cmoves))))))
 
@@ -76,8 +86,9 @@
     " mega"))
 
 (defn select-move [opts]
-  (let [cmoves (:moves (get (:active opts) 0))]
-    (str "/choose move " (if @opp-poke (best-move cmoves) (:move (rand-nth cmoves))) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
+  (let [cmoves (:moves (get (:active opts) 0))
+        side (:side opts)]
+    (str "/choose move " (if @opp-poke (best-move cmoves side) (:move (rand-nth cmoves))) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
 
 (defn get-next-poke [pokemon rqid i]
   (if (seq pokemon)
@@ -96,4 +107,6 @@
     (:forceSwitch opts)
     	(switch (:side opts) (:rqid opts))
     (:wait opts)
-    	(psychological-warfare)))
+    	(psychological-warfare)
+    (:teamPreview opts)
+    	(str "/team 1|" (:rqid opts) "\n" (start-timer))))
