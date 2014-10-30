@@ -35,7 +35,7 @@
   (update-score (if (= (get smsg 2) config/user) true false))
   (reset-state)
   (println (str "Score so far this session: " @wins "/" @losses))
-  (if @config/search-more? (send-msg "" (find-battle)) (System/exit 0)))
+  (if @config/search-more? (send-msg "" (find-battle)) (do (ws/close socket) (System/exit 0))))
 
 (defn poke-to-id [poke]
   (string/lower-case (string/replace poke #"[^\p{L}\p{Nd}]+" "")))
@@ -63,7 +63,9 @@
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
            ;if its a switch message, check if its the opponent
           (and (= type (or "switch" "detailschange")) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
-          	(reset! opp-poke (get-poke-from-switch (get smsg 3))))))))
+          	(reset! opp-poke (get-poke-from-switch (get smsg 3)))
+          (and (= type "faint") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ;temporary until refactor
+          	(reset! opp-poke nil))))))
 
 (defn parse-msg [msg]
   (if @config/debugging? (prn msg))

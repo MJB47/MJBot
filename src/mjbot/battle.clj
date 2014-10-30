@@ -69,7 +69,7 @@
                (:move (first m))
                (off-power (:id (first m)) @opp-poke))
         (recur (rest m) best-name best-power))
-      (or best-name (rand-nth cmoves)))))
+      (or best-name (:move (rand-nth cmoves))))))
 
 (defn mega-evo? [side]
   (if (:canMegaEvo (first (:pokemon side))) ;who wrote this code ps-side??
