@@ -25,9 +25,15 @@
 (defn update-score [me?]
   (if me? (swap! wins inc) (swap! losses inc)))
 
+; (defn find-battle []
+;   (let [team "/utm"
+;         tier "/search randombattle"]
+;     (string/join "\n" [team tier])))
+
 (defn find-battle []
-  (let [team "/utm"
-        tier "/search randombattle"]
+  (let [team (str "/utm " (rand-nth ["King of Avians|hooh|choiceband|H|sacredfire,bravebird,earthquake,sleeptalk|Adamant|200,252,,,,56|||||]Kamikaze Bird|talonflame|choiceband|H|flareblitz,bravebird,uturn,tailwind|Adamant|192,252,,,,60|||||]King Charizard|charizard|charizarditey|H|fireblast,solarbeam,earthquake,sunnyday|Hasty|,4,,252,,252|||||]Fawkes|moltres|choicescarf||hurricane,fireblast,uturn,ancientpower|Rash|,4,,252,,252|||||]Baby Bird|fletchinder||H|tailwind,acrobatics,taunt,uturn|Adamant|248,252,4,,,|||||]Arceus||lifeorb||extremespeed,swordsdance,earthquake,shadowclaw|Jolly|,252,,,4,252|||||"
+                                     "Qwilfish||choiceband|1|waterfall,aquajet,poisonjab,explosion|Jolly|4,252,,,,252|||||]Kyogre||choicescarf||waterspout,surf,icebeam,thunder|Timid|4,,,252,,252|||||]Palkia||choicescarf||hydropump,fireblast,spacialrend,thunder|Timid|4,,,252,,252|||||]Kabutops||choiceband||waterfall,aquajet,stoneedge,lowkick|Adamant|4,252,,,,252|||||]Politoed||choicescarf|H|hydropump,surf,icebeam,encore|Timid|4,,,252,,252|||||]Omastar||choicespecs||hydropump,surf,icebeam,earthpower|Modest|4,,,252,,252|||||"]))
+        tier "/search uberssuspecttest"]
     (string/join "\n" [team tier])))
 
 (defn psychological-warfare []
@@ -61,27 +67,38 @@
     (if (poke-type poke 1) (type-to-eff (type (:damageTaken ((poke-type poke 1) types)))) 1)))
 
 (defn stab [type side]
-  (if (= type (or (poke-type (active-poke side) 0) (poke-type (active-poke side) 1)))
+  (if (or (= type (poke-type (active-poke side) 0)) (= type (poke-type (active-poke side) 1)))
     1.5
     1))
 
 (defn off-power [move poke side]
-  (*
-    (move-power move)
-    (off-effectiveness (move-type move) poke)
-    (stab (move-type move) side)))
+  (if-not (:disabled move)
+    (*
+	    (move-power (:id move))
+	    (off-effectiveness (move-type (:id move)) poke)
+	    (stab (move-type (:id move)) side))
+    0))
+
+(defn get-next-poke [pokemon rqid i]
+  (if (seq pokemon)
+    (if-not (= (subs (:condition (first pokemon)) 0 1) "0")
+      (str "switch " i "|" rqid)
+      (get-next-poke (rest pokemon) rqid (inc i)))))
 
 (defn best-move [cmoves side]
   (loop [m cmoves
          best-name nil
          best-power 0]
     (if (seq m)
-      (if (< best-power (off-power (:id (first m)) @opp-poke side))
-        (recur (rest m)
-               (:move (first m))
-               (off-power (:id (first m)) @opp-poke side))
-        (recur (rest m) best-name best-power))
-      (or best-name (:move (rand-nth cmoves))))))
+      (let [power (off-power (first m) @opp-poke side)]
+        (if (< best-power power)
+              (recur (rest m)
+                     (:move (first m))
+                     power)
+              (recur (rest m) best-name best-power)))
+      (if (> 80 best-power)
+        (or (get-next-poke (rest (:pokemon (:side @last-request))) (:rqid @last-request) 2) (str "move " (or best-name (:move (rand-nth cmoves)))))
+        (str "move " (or best-name (:move (rand-nth cmoves))))))))
 
 (defn mega-evo? [side]
   (if (:canMegaEvo (first (:pokemon side))) ;who wrote this code ps-side??
@@ -90,17 +107,11 @@
 (defn select-move [opts]
   (let [cmoves (:moves (get (:active opts) 0))
         side (:side opts)]
-    (str "/choose move " (if @opp-poke (best-move cmoves side) (:move (rand-nth cmoves))) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
-
-(defn get-next-poke [pokemon rqid i]
-  (if (seq pokemon)
-    (if-not (= (subs (:condition (first pokemon)) 0 1) "0")
-      (str "/choose switch " i "|" rqid)
-      (get-next-poke (rest pokemon) rqid (inc i)))))
+    (str "/choose " (if @opp-poke (best-move cmoves side) (:move (rand-nth cmoves))) (mega-evo? (:side opts)) "|" (:rqid opts) "\n" (start-timer))))
 
 (defn switch [opts rqid]
   (let [pokemon (:pokemon opts)]
-    (get-next-poke (rest pokemon) rqid 2))) ; first poke is always the one that just died/switched
+    (str "/choose " (get-next-poke (rest pokemon) rqid 2)))) ; first poke is always the one that just died/switched
 
 (defn play-turn [opts]
   (cond

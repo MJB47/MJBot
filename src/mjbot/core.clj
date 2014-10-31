@@ -2,7 +2,7 @@
   (:use mjbot.parse
         mjbot.config))
 
-(defn finish-up []
+(defn finish []
   (reset! search-more? false)
   (println "Finishing battle"))
 
