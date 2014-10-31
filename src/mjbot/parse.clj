@@ -38,6 +38,14 @@
   (println (str "Score so far this session: " @wins "/" @losses))
   (if @config/search-more? (send-msg "" (find-battle)) (System/exit 0)))
 
+(defn handle-request [room request]
+  (if (:active request)
+    (reset! last-request request)
+    (send-msg room (play-turn request))))
+
+(defn handle-switch [room smsg]
+  (reset! opp-poke (get-poke-from-details (get smsg 3))))
+
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
     (if (= "|" (subs msg 0 1))
@@ -47,7 +55,7 @@
           (= type "challstr")
           	(login (get smsg 2) (get smsg 3))
           (= type "request")
-          	(send-msg room (play-turn (parse-json (get smsg 2))))
+          	(handle-request room (parse-json (get smsg 2)))
           (= type "init")
           	(if (= (get smsg 2) "battle") (send-msg room "Good Luck and Have Fun"))
           (= type "win")
@@ -58,9 +66,12 @@
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
            ;if its a switch message, check if its the opponent
           (and (= type (or "switch" "detailschange")) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
-          	(reset! opp-poke (get-poke-from-details (get smsg 3)))
+          	(handle-switch room smsg)
           (and (= type "faint") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ;temporary until refactor
-          	(reset! opp-poke nil))))))
+          	(reset! opp-poke nil)
+          (= type "turn")
+          	(send-msg room (play-turn @last-request))
+          )))))
 
 (defn parse-msg [msg]
   (if @config/debugging? (prn msg))

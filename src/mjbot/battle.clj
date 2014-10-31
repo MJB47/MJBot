@@ -10,6 +10,8 @@
 (def who-am-i (atom nil))
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
 
+(def last-request (atom nil)) ;bad hack
+
 (defn set-who-am-i [me]
   (reset! who-am-i me))
 
