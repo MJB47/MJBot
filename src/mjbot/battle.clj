@@ -1,6 +1,7 @@
 (ns mjbot.battle
   (:use mjbot.data.data
-        mjbot.util)
+        mjbot.util
+        [mjbot.config :only [current-tier teams]])
   (:require [clojure.string :as string]
             [mjbot.config :as config]))
 
@@ -25,15 +26,9 @@
 (defn update-score [me?]
   (if me? (swap! wins inc) (swap! losses inc)))
 
-; (defn find-battle []
-;   (let [team "/utm"
-;         tier "/search randombattle"]
-;     (string/join "\n" [team tier])))
-
 (defn find-battle []
-  (let [team (str "/utm " (rand-nth ["King of Avians|hooh|choiceband|H|sacredfire,bravebird,earthquake,sleeptalk|Adamant|200,252,,,,56|||||]Kamikaze Bird|talonflame|choiceband|H|flareblitz,bravebird,uturn,tailwind|Adamant|192,252,,,,60|||||]King Charizard|charizard|charizarditey|H|fireblast,solarbeam,earthquake,sunnyday|Hasty|,4,,252,,252|||||]Fawkes|moltres|choicescarf||hurricane,fireblast,uturn,ancientpower|Rash|,4,,252,,252|||||]Baby Bird|fletchinder||H|tailwind,acrobatics,taunt,uturn|Adamant|248,252,4,,,|||||]Arceus||lifeorb||extremespeed,swordsdance,earthquake,shadowclaw|Jolly|,252,,,4,252|||||"
-                                     "Qwilfish||choiceband|1|waterfall,aquajet,poisonjab,explosion|Jolly|4,252,,,,252|||||]Kyogre||choicescarf||waterspout,surf,icebeam,thunder|Timid|4,,,252,,252|||||]Palkia||choicescarf||hydropump,fireblast,spacialrend,thunder|Timid|4,,,252,,252|||||]Kabutops||choiceband||waterfall,aquajet,stoneedge,lowkick|Adamant|4,252,,,,252|||||]Politoed||choicescarf|H|hydropump,surf,icebeam,encore|Timid|4,,,252,,252|||||]Omastar||choicespecs||hydropump,surf,icebeam,earthpower|Modest|4,,,252,,252|||||"]))
-        tier "/search uberssuspecttest"]
+  (let [team (str "/utm " (rand-nth ((keyword current-tier) teams)))
+        tier (str "/search " current-tier)]
     (string/join "\n" [team tier])))
 
 (defn psychological-warfare []
@@ -96,7 +91,7 @@
                      (:move (first m))
                      power)
               (recur (rest m) best-name best-power)))
-      (if (> 80 best-power)
+      (if (>= 60 best-power)
         (or (get-next-poke (rest (:pokemon (:side @last-request))) (:rqid @last-request) 2) (str "move " (or best-name (:move (rand-nth cmoves)))))
         (str "move " (or best-name (:move (rand-nth cmoves))))))))
 

@@ -8,3 +8,6 @@
 
 (defn switch-debugging []
   (reset! debugging? (not @debugging?)))
+
+(defn change-tier [tier]
+  (reset! current-tier tier))
