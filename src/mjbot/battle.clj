@@ -10,6 +10,7 @@
 
 (def who-am-i (atom nil))
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
+(def opp-status (atom {}))
 
 (def last-request (atom nil)) ;bad hack
 
@@ -21,7 +22,8 @@
 
 (defn reset-state []
   (reset! who-am-i nil)
-  (reset! opp-poke nil))
+  (reset! opp-poke nil)
+  (reset! opp-status {}))
 
 (defn update-score [me?]
   (if me? (swap! wins inc) (swap! losses inc)))
@@ -42,24 +44,30 @@
 
 ;takes move id
 (defn move-type [move]
-  (keyword (:type ((keyword move) moves))))
+  (if (:status move)
+    (keyword (:status ((keyword move) moves)))
+    (keyword (:type ((keyword move) moves)))))
+
+(defn move-status [move-data]
+  (if-not ((keyword @opp-poke) @opp-status)
+    121 ;more than a neutral focus blast or w/e
+    0))
 
 (defn move-power [move]
-  (* 
-    (:basePower ((keyword move) moves)) 
-    (or (:multiHit ((keyword move) moves)) 1))) ;lets be optimistic
-
-;returns nil if its not a status move
-(defn move-status [move]
-  (:status ((keyword move) moves)))
+  (let [move-data ((keyword move) moves)]
+    (if (:status move-data)
+      (move-status move-data)
+      (* 
+        (:basePower move-data) 
+        (or (:multiHit move-data) 1))))) ;lets be optimistic
 
 (defn poke-type [poke i];0 or 1
   (keyword (get (:types (poke pokedex)) i)))
 
 (defn off-effectiveness [type poke]
   (* 
-    (type-to-eff (type (:damageTaken ((poke-type poke 0) types))))
-    (if (poke-type poke 1) (type-to-eff (type (:damageTaken ((poke-type poke 1) types)))) 1)))
+    (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
+    (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)))
 
 (defn stab [type side]
   (if (or (= type (poke-type (active-poke side) 0)) (= type (poke-type (active-poke side) 1)))

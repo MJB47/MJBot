@@ -46,6 +46,10 @@
 (defn handle-switch [room smsg]
   (reset! opp-poke (get-poke-from-details (get smsg 3))))
 
+(defn handle-opp-status [smsg]
+  (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
+    (swap! opp-status conj {(keyword (string-to-id (subs (get smsg 2) 5))) (get smsg 3)})))
+
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
     (if (= "|" (subs msg 0 1))
@@ -69,6 +73,8 @@
           	(handle-switch room smsg)
           (and (= type "faint") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ;temporary until refactor
           	(reset! opp-poke nil)
+          (= type "-status")
+          	(handle-opp-status smsg)
           (= type "turn")
           	(send-msg room (play-turn @last-request))
           )))))
