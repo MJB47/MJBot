@@ -27,8 +27,8 @@
   (if me? (swap! wins inc) (swap! losses inc)))
 
 (defn find-battle []
-  (let [team (str "/utm " (rand-nth ((keyword current-tier) teams)))
-        tier (str "/search " current-tier)]
+  (let [team (str "/utm " (rand-nth ((keyword @current-tier) teams)))
+        tier (str "/search " @current-tier)]
     (string/join "\n" [team tier])))
 
 (defn psychological-warfare []
@@ -67,33 +67,81 @@
     1))
 
 (defn off-power [move poke side]
-  (if-not (:disabled move)
+  (let [move (if (.startsWith move "hiddenpower") "hiddenpower" move)
+        type (move-type move)]
     (*
-	    (move-power (:id move))
-	    (off-effectiveness (move-type (:id move)) poke)
-	    (stab (move-type (:id move)) side))
-    0))
+      (move-power move)
+      (off-effectiveness type poke)
+      (stab type side))))
 
-(defn get-next-poke [pokemon rqid i]
-  (if (seq pokemon)
-    (if-not (= (subs (:condition (first pokemon)) 0 1) "0")
-      (str "switch " i "|" rqid)
-      (get-next-poke (rest pokemon) rqid (inc i)))))
-
-(defn best-move [cmoves side]
-  (loop [m cmoves
+(defn best-move-power [move-ids side]
+  (loop [m move-ids
          best-name nil
          best-power 0]
     (if (seq m)
       (let [power (off-power (first m) @opp-poke side)]
         (if (< best-power power)
               (recur (rest m)
-                     (:move (first m))
+                     (first m)
                      power)
               (recur (rest m) best-name best-power)))
-      (if (>= 60 best-power)
-        (or (get-next-poke (rest (:pokemon (:side @last-request))) (:rqid @last-request) 2) (str "move " (or best-name (:move (rand-nth cmoves)))))
-        (str "move " (or best-name (:move (rand-nth cmoves))))))))
+      {:move best-name :power best-power})))
+
+(defn fainted? [pokemon]
+  (= (subs (:condition (first pokemon)) 0 1) "0"))
+
+(defn get-next-poke [pokemon rqid i]
+  (if (seq pokemon)
+    (if-not (fainted? pokemon)
+      (str "switch " i "|" rqid)
+      (get-next-poke (rest pokemon) rqid (inc i)))))
+
+(defn good-enough? [power]
+  (>= 60 (:power power)))
+
+(defn good-switch [pokemon rqid i]
+  (loop [p pokemon
+         i i
+         best nil
+         best-power 0]
+    (if (seq p)
+      (if-not (fainted? p)
+        (let [power (best-move-power (:moves (first p)) {:pokemon p})]
+          (do 
+            (println best-power power)
+            (if-not (good-enough? power)
+              (if (< best-power (:power power))
+                (recur (rest p)
+                       (inc i)
+                       i
+                       (:power power))
+                (recur (rest p) (inc i) best best-power))
+              (recur (rest p) (inc i) best best-power))))
+        (recur (rest p) (inc i) best best-power))
+      (if best
+        (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
+        (get-next-poke pokemon rqid 2)))))
+
+(defn get-move-ids [cmoves]
+  (loop [r cmoves
+         t []]
+    (if (seq r)
+      (if (:disabled (first r))
+          (recur (rest r)
+                 t)
+          (recur (rest r)
+                 (conj t (:id (first r)))))
+      t)))
+
+(defn best-move [cmoves side]
+  (let [best-attack (best-move-power (get-move-ids cmoves) side)
+        best-name (:move best-attack)
+        pokemon (rest (:pokemon (:side @last-request)))]
+    (if (good-enough? best-attack)
+      (or 
+        (good-switch pokemon (:rqid @last-request) 2)
+        (str "move " (or best-name (:move (rand-nth cmoves)))))
+      (str "move " (or best-name (:move (rand-nth cmoves)))))))
 
 (defn mega-evo? [side]
   (if (:canMegaEvo (first (:pokemon side))) ;who wrote this code ps-side??
@@ -106,7 +154,7 @@
 
 (defn switch [opts rqid]
   (let [pokemon (:pokemon opts)]
-    (str "/choose " (get-next-poke (rest pokemon) rqid 2)))) ; first poke is always the one that just died/switched
+    (str "/choose " (good-switch (rest pokemon) rqid 2)))) ; first poke is always the one that just died/switched
 
 (defn play-turn [opts]
   (cond
