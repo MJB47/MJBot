@@ -74,10 +74,23 @@
     1.5
     1))
 
+; for some reason ps gives the id of hidden power to be exactly "hiddenpower" for the active poke, but
+; "hiddenpowertypedamage" from side... who wrote this?
+(defn full-hidden-power-id [side]
+  (let [moves (:moves (first (:pokemon side)))]
+    (loop [m moves]
+      (if (.startsWith (first m) "hiddenpower")
+        (first m)
+        (recur (rest m))))))
+
 (defn off-power [original-move poke side]
   (let [move (if (.startsWith original-move "hiddenpower") "hiddenpower" original-move)
-        ; type (if (= move "hiddenpower") (type-of-hidden-power original-move) (move-type move))]
-        type (if false (type-of-hidden-power original-move) (move-type move))]
+        type (if (= move "hiddenpower") 
+               (if-not (= original-move "hiddenpower")
+                 (type-of-hidden-power original-move)
+                 (type-of-hidden-power (full-hidden-power-id side)))
+               (move-type move))]
+        ; type (if false (type-of-hidden-power original-move) (move-type move))]
     (*
       (move-power move)
       (off-effectiveness type poke)
