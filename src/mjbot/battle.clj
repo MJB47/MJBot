@@ -67,7 +67,7 @@
 (defn move-type [move]
   (let [move (keyword move)]
     (if (:status (move moves))
-      (if (off-effectiveness (keyword (:status (move moves))) @opp-poke)
+      (if (= (off-effectiveness (keyword (:status (move moves))) @opp-poke) 0)
         (keyword (:status (move moves)))
         (keyword (:type (move moves))))
       (keyword (:type (move moves))))))
