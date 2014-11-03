@@ -76,7 +76,8 @@
 
 (defn off-power [original-move poke side]
   (let [move (if (.startsWith original-move "hiddenpower") "hiddenpower" original-move)
-        type (if (= move "hiddenpower") (type-of-hidden-power original-move) (move-type move))]
+        ; type (if (= move "hiddenpower") (type-of-hidden-power original-move) (move-type move))]
+        type (if false (type-of-hidden-power original-move) (move-type move))]
     (*
       (move-power move)
       (off-effectiveness type poke)
