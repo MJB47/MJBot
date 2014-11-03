@@ -42,12 +42,6 @@
 (defn active-poke [side]
   (get-poke-from-details (:details (first (:pokemon side)))))
 
-;takes move id
-(defn move-type [move]
-  (if (:status move)
-    (keyword (:status ((keyword move) moves)))
-    (keyword (:type ((keyword move) moves)))))
-
 (defn move-status [move-data]
   (if-not ((keyword @opp-poke) @opp-status)
     121 ;more than a neutral focus blast or w/e
@@ -68,6 +62,15 @@
   (* 
     (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
     (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)))
+
+;takes move id
+(defn move-type [move]
+  (let [move (keyword move)]
+    (if (:status (move moves))
+      (if (off-effectiveness (keyword (:status (move moves))) @opp-poke)
+        (keyword (:status (move moves)))
+        (keyword (:type (move moves))))
+      (keyword (:type (move moves))))))
 
 (defn stab [type side]
   (if (or (= type (poke-type (active-poke side) 0)) (= type (poke-type (active-poke side) 1)))

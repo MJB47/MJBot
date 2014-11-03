@@ -69,7 +69,7 @@
           (= type "player")
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
            ;if its a switch message, check if its the opponent
-          (and (= type (or "switch" "detailschange" "drag")) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
+          (and (= type (or "switch" "detailschange" "drag" "-formechange")) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
           	(handle-switch room smsg)
           (and (= type "faint") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ;temporary until refactor
           	(reset! opp-poke nil)
