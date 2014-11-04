@@ -156,7 +156,7 @@
         (recur (rest p) (inc i) best best-power))
       (if best
         (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
-        (get-next-poke pokemon rqid 2)))))
+        nil))))
 
 (defn get-move-ids [cmoves]
   (loop [r cmoves
@@ -190,7 +190,7 @@
 
 (defn switch [opts rqid]
   (let [pokemon (:pokemon opts)]
-    (str "/choose " (good-switch (rest pokemon) rqid 2)))) ; first poke is always the one that just died/switched
+    (str "/choose " (or (good-switch (rest pokemon) rqid 2) (get-next-poke (rest pokemon) rqid 2))))) ; first poke is always the one that just died/switched
 
 (defn play-turn [opts]
   (cond
