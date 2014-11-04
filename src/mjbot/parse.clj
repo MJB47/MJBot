@@ -13,6 +13,9 @@
   (ws/send-msg socket (str room "|" msg))
   (println "> " msg))
 
+(defn send-pm [user msg]
+  (send-msg "" (str "/pm " user ", " msg)))
+
 (defn parse-json [json]
   (json/read-str json :key-fn keyword))
 
