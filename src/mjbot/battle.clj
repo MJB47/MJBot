@@ -67,17 +67,21 @@
   (keyword (get (:types (poke pokedex)) i)))
 
 (defn off-effectiveness [type poke]
-  (* 
-    (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
-    (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)))
+  (if (= type :Neutral)
+    1
+    (* 
+      (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
+      (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1))))
 
 ;takes move id
 (defn move-type [move]
   (let [move (keyword move)]
     (if (:status (move moves))
-      (if (= (off-effectiveness (keyword (:status (move moves))) @opp-poke) 0)
+      (if (zero? (off-effectiveness (keyword (:status (move moves))) @opp-poke))
         (keyword (:status (move moves)))
-        (keyword (:type (move moves))))
+        (if (zero? (off-effectiveness (keyword (:type (move moves))) @opp-poke))
+          (keyword (:type (move moves)))
+          :Neutral))
       (keyword (:type (move moves))))))
 
 (defn stab [type side]
@@ -101,7 +105,6 @@
                  (type-of-hidden-power original-move)
                  (type-of-hidden-power (full-hidden-power-id side)))
                (move-type move))]
-        ; type (if false (type-of-hidden-power original-move) (move-type move))]
     (*
       (move-power move)
       (off-effectiveness type poke)
