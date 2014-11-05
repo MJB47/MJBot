@@ -71,11 +71,12 @@
             (chall-user user (first args)))))))
 
 (defn handle-switch [room smsg]
-  (reset! opp-poke (get-poke-from-details (get smsg 3))))
+  (reset! opp-poke (get-poke-from-details (get smsg 3)))
+  (reset! opp-item ""))
 
 (defn handle-opp-status [smsg]
   (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
-    (swap! opp-status conj {(keyword (string-to-id (subs (get smsg 2) 5))) (get smsg 3)})))
+    (swap! opp-status conj {@opp-poke (get smsg 3)})))
 
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
@@ -97,7 +98,9 @@
             ; this fires when the bot updates its name (i.e. when it logs on for the first time)
             ; (if (= (get smsg 2) config/user) (start-search))
           (= type "player")
-            (if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
+          	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
+          (= type "-item")
+            (reset! opp-item (get smsg 3))
            ;if its a switch message, check if its the opponent
           (and (some (partial = type) ["switch" "detailschange" "drag" "-formechange"]) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
             (handle-switch room smsg)
@@ -108,7 +111,11 @@
           (= type "-curestatus")
             (swap! opp-status dissoc (keyword (string-to-id (subs (get smsg 2) 5))))
           (= type "-cureteam")
-            (reset! opp-status {})
+          	(reset! opp-status {})
+          (and (= type "callback") (= (get smsg 2) "trapped"))
+            (do 
+              (swap! last-request conj {:trapped true})
+              (play-turn @last-request))
           (= type "turn")
             (send-msg room (play-turn @last-request))
           )))))

@@ -9,8 +9,10 @@
 (def losses (atom 0))
 
 (def who-am-i (atom nil))
+
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
 (def opp-status (atom {}))
+(def opp-item (atom ""))
 
 (def last-request (atom nil)) ;bad hack
 
@@ -66,12 +68,24 @@
 (defn poke-type [poke i];0 or 1
   (keyword (get (:types (poke pokedex)) i)))
 
+(defn get-poke-abilities [poke]
+  (map-to-vec (:abilities (poke pokedex))))
+
+(defn ability-immune? [type poke]
+  (loop [abilities (get-poke-abilities poke)]
+    (if (seq abilities)
+      (if (= ((keyword (first abilities)) immunity-abilities) type)
+        true
+        (recur (rest abilities))))))
+
 (defn off-effectiveness [type poke]
   (if (= type :Neutral)
     1
     (* 
       (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
-      (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1))))
+      (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)
+      (if (ability-immune? type poke) 0 1)
+      (if (and (= @opp-item "Air Balloon") (= type :Ground)) 0 1))))
 
 ;takes move id
 (defn move-type [move]
@@ -136,27 +150,28 @@
   (>= 60 (:power power)))
 
 (defn good-switch [pokemon rqid i]
-  (loop [p pokemon
-         i i
-         best nil
-         best-power 0]
-    (if (seq p)
-      (if-not (fainted? p)
-        (let [power (best-move-power (:moves (first p)) {:pokemon p})]
-          (do 
-            (println best-power power)
-            (if-not (good-enough? power)
-              (if (< best-power (:power power))
-                (recur (rest p)
-                       (inc i)
-                       i
-                       (:power power))
-                (recur (rest p) (inc i) best best-power))
-              (recur (rest p) (inc i) best best-power))))
-        (recur (rest p) (inc i) best best-power))
-      (if best
-        (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
-        (get-next-poke pokemon rqid 2)))))
+  (if-not (:trapped @last-request)
+    (loop [p pokemon
+           i i
+           best nil
+           best-power 0]
+      (if (seq p)
+        (if-not (fainted? p)
+          (let [power (best-move-power (:moves (first p)) {:pokemon p})]
+            (do 
+              (println best-power power)
+              (if-not (good-enough? power)
+                (if (< best-power (:power power))
+                  (recur (rest p)
+                         (inc i)
+                         i
+                         (:power power))
+                  (recur (rest p) (inc i) best best-power))
+                (recur (rest p) (inc i) best best-power))))
+          (recur (rest p) (inc i) best best-power))
+        (if best
+          (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
+          nil)))))
 
 (defn get-move-ids [cmoves]
   (loop [r cmoves
@@ -190,7 +205,7 @@
 
 (defn switch [opts rqid]
   (let [pokemon (:pokemon opts)]
-    (str "/choose " (good-switch (rest pokemon) rqid 2)))) ; first poke is always the one that just died/switched
+    (str "/choose " (or (good-switch (rest pokemon) rqid 2) (get-next-poke (rest pokemon) rqid 2))))) ; first poke is always the one that just died/switched
 
 (defn play-turn [opts]
   (cond
