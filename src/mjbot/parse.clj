@@ -51,7 +51,7 @@
 
 (defn handle-opp-status [smsg]
   (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
-    (swap! opp-status conj {(keyword (string-to-id (subs (get smsg 2) 5))) (get smsg 3)})))
+    (swap! opp-status conj {@opp-poke (get smsg 3)})))
 
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
