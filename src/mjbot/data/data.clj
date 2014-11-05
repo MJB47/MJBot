@@ -33,6 +33,15 @@
    :dryskin :Water
    })
 
+(def stat-boosts 
+  {6 4
+   5 3.5
+   4 3
+   3 2.5
+   2 2
+   1 1.5
+   0 1})
+
 (def trash-talk
   ["Its fine, I literally have all day" 
    "No really, I have nothing better to do" 
