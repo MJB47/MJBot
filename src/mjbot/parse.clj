@@ -82,6 +82,10 @@
           	(swap! opp-status dissoc (keyword (string-to-id (subs (get smsg 2) 5))))
           (= type "-cureteam")
           	(reset! opp-status {})
+          (and (= type "callback") (= (get smsg 2) "trapped"))
+            (do 
+              (swap! last-request conj {:trapped true})
+              (play-turn @last-request))
           (= type "turn")
           	(send-msg room (play-turn @last-request))
           )))))

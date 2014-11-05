@@ -136,27 +136,28 @@
   (>= 60 (:power power)))
 
 (defn good-switch [pokemon rqid i]
-  (loop [p pokemon
-         i i
-         best nil
-         best-power 0]
-    (if (seq p)
-      (if-not (fainted? p)
-        (let [power (best-move-power (:moves (first p)) {:pokemon p})]
-          (do 
-            (println best-power power)
-            (if-not (good-enough? power)
-              (if (< best-power (:power power))
-                (recur (rest p)
-                       (inc i)
-                       i
-                       (:power power))
-                (recur (rest p) (inc i) best best-power))
-              (recur (rest p) (inc i) best best-power))))
-        (recur (rest p) (inc i) best best-power))
-      (if best
-        (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
-        nil))))
+  (if-not (:trapped @last-request)
+    (loop [p pokemon
+           i i
+           best nil
+           best-power 0]
+      (if (seq p)
+        (if-not (fainted? p)
+          (let [power (best-move-power (:moves (first p)) {:pokemon p})]
+            (do 
+              (println best-power power)
+              (if-not (good-enough? power)
+                (if (< best-power (:power power))
+                  (recur (rest p)
+                         (inc i)
+                         i
+                         (:power power))
+                  (recur (rest p) (inc i) best best-power))
+                (recur (rest p) (inc i) best best-power))))
+          (recur (rest p) (inc i) best best-power))
+        (if best
+          (do (println "best: " best " - " best-power) (str "switch " best "|" rqid))
+          nil)))))
 
 (defn get-move-ids [cmoves]
   (loop [r cmoves
