@@ -43,11 +43,11 @@
    0 1})
 
 (def trash-talk
-  ["Its fine, I literally have all day" 
+  ["It's fine, I literally have all day" 
    "No really, I have nothing better to do" 
-   "Take your time, wouldn't want to lose because of a missclick now would we?" 
+   "Take your time, wouldn't want to lose because of a misclick now would we?" 
    "Little bit of tortoise and hare going on here it seems" 
    "WOAH slow down there, there might be an accident" 
    "Are you lagging, I assume you are lagging..." 
-   "Please say I havn't DC'd..." 
-   "Im flattered you need so much thinking time to beat me"])
+   "Please say I haven't DC'd..." 
+   "I'm flattered you need so much thinking time to beat me"])

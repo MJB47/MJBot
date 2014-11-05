@@ -1,6 +1,10 @@
 (ns mjbot.core
   (:use mjbot.parse
-        mjbot.config))
+        mjbot.config
+        [mjbot.battle :only [find-battle]]))
+
+(defn start-search []
+  (send-msg "" (find-battle)))
 
 (defn finish []
   (reset! search-more? false)
