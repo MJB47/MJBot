@@ -39,9 +39,6 @@
           userstr (str "/chall " user ", " tier)]
       (string/join "\n" [team userstr]))))
 
-(defn start-search []
-  (send-msg "" (find-battle)))
-
 (defn handle-win [room smsg]
   (send-msg room "Good Game")
   (send-msg "" (str "/leave " room))
@@ -62,7 +59,7 @@
           args (rest smsg)]
       (cond
         (= command "!startsearch")
-          (start-search)
+          (send-msg "" (find-battle))
         ; you can pick the tier. if no tier is selected, 
         ; it falls back on current-tier (specified in config)
         (= command "!challme")
