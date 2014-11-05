@@ -66,12 +66,23 @@
 (defn poke-type [poke i];0 or 1
   (keyword (get (:types (poke pokedex)) i)))
 
+(defn get-poke-abilities [poke]
+  (map-to-vec (:abilities (poke pokedex))))
+
+(defn ability-immune? [type poke]
+  (loop [abilities (get-poke-abilities poke)]
+    (if (seq abilities)
+      (if (= ((keyword (first abilities)) immunity-abilities) type)
+        true
+        (recur (rest abilities))))))
+
 (defn off-effectiveness [type poke]
   (if (= type :Neutral)
     1
     (* 
       (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
-      (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1))))
+      (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)
+      (if (ability-immune? type poke) 0 1))))
 
 ;takes move id
 (defn move-type [move]

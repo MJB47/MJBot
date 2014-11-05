@@ -23,6 +23,16 @@
 (def pokedex
   (get-data "pokedex.json"))
 
+(def immunity-abilities
+  {:levitate :Ground
+   :sapsipper :Grass
+   :flashfire :Fire
+   :waterabsorb :Water
+   :voltabsorb :Electric
+   :lightningrod :Electric
+   :dryskin :Water
+   })
+
 (def trash-talk
   ["Its fine, I literally have all day" 
    "No really, I have nothing better to do" 

@@ -9,3 +9,10 @@
 
 (defn type-of-hidden-power [hp]
   (keyword (string/capitalize (subs hp 11 (- (count hp) 2)))))
+
+(defn map-to-vec [m]
+  (loop [m m
+         v []]
+    (if (seq m)
+      (recur (rest m)
+             (conj v (get (first m) 1))))))
