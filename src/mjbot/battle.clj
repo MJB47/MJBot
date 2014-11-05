@@ -13,6 +13,7 @@
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
 (def opp-status (atom {}))
 (def opp-item (atom ""))
+(def opp-sub (atom false))
 
 (def last-request (atom nil)) ;bad hack
 
@@ -54,7 +55,7 @@
 
 (defn move-status [move-data]
   (if-not (or ((keyword @opp-poke) @opp-status) (sleep-clause))
-    121 ;more than a neutral focus blast or w/e
+    (if-not @opp-sub 121 0) ;more than a neutral focus blast or w/e
     0))
 
 (defn move-power [move]
