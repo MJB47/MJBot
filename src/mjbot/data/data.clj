@@ -40,7 +40,13 @@
    3 2.5
    2 2
    1 1.5
-   0 1})
+   0 1
+   -1 0.75
+   -2 0.5
+   -3 0.4
+   -4 0.33
+   -5 0.29
+   -6 0.25})
 
 (def trash-talk
   ["It's fine, I literally have all day" 

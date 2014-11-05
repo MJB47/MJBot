@@ -9,11 +9,13 @@
 (def losses (atom 0))
 
 (def who-am-i (atom nil))
+(def my-stat-boosts (atom {}))
 
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
 (def opp-status (atom {}))
 (def opp-item (atom ""))
 (def opp-sub (atom false))
+(def opp-stat-boosts (atom {}))
 
 (def last-request (atom nil)) ;bad hack
 
@@ -125,12 +127,35 @@
       (off-effectiveness type poke)
       (stab type side))))
 
+(defn stat-atk [poke move stat-boosts]
+  (let [category (:category ((keyword move) moves))]
+    (if (= "Status" category)
+      1
+      (if (= "Physical" category)
+        (* (:atk (:baseStats (poke pokedex))) (or (get stat-boosts (:atk stat-boosts)) 1))
+        (* (:spa (:baseStats (poke pokedex))) (or (get stat-boosts (:spa stat-boosts)) 1))))))
+
+(defn stat-def [poke move]
+  (let [category (:category ((keyword move) moves))]
+    (if (= "Status" category)
+      1
+      (if (= "Physical" category)
+        (* (:def (:baseStats (poke pokedex))) (or (get stat-boosts (:def @opp-stat-boosts)) 1))
+        (* (:spd (:baseStats (poke pokedex))) (or (get stat-boosts (:spd @opp-stat-boosts)) 1))))))
+
+(defn crude-calc [move poke side]
+  (/ 
+    (*
+      (off-power move poke side)
+      (stat-atk (active-poke side) move (if (= (active-poke side) (active-poke (:side @last-request))) @my-stat-boosts))) ; pretty ugly
+    (stat-def poke move)))
+
 (defn best-move-power [move-ids side]
   (loop [m move-ids
          best-name nil
          best-power 0]
     (if (seq m)
-      (let [power (off-power (first m) @opp-poke side)]
+      (let [power (crude-calc (first m) @opp-poke side)]
         (if (< best-power power)
               (recur (rest m)
                      (first m)
@@ -148,7 +173,7 @@
       (get-next-poke (rest pokemon) rqid (inc i)))))
 
 (defn good-enough? [power]
-  (>= 60 (:power power)))
+  (>= 100 (:power power)))
 
 (defn good-switch [pokemon rqid i]
   (if-not (:trapped @last-request)

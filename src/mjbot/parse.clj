@@ -76,6 +76,14 @@
   (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
     (swap! opp-status conj {@opp-poke (get smsg 3)})))
 
+(defn handle-stat-boost [smsg]
+  (let [user (if (= (subs (get smsg 2) 0 2) @who-am-i) my-stat-boosts opp-stat-boosts)
+        boost? (= (get smsg 1) "-boost") ;boost or unboost
+        stat (keyword (get smsg 3))]
+    (if boost?
+      (swap! user conj {stat (inc (or (stat @user) 0))})
+      (swap! user conj {stat (dec (or (stat @user) 0))}))))
+
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
     (if (= "|" (subs msg 0 1))
@@ -112,6 +120,8 @@
             (swap! opp-status dissoc (keyword (string-to-id (subs (get smsg 2) 5))))
           (= type "-cureteam")
           	(reset! opp-status {})
+          (or (= type "-boost") (= type "-unboost"))
+            (handle-stat-boost smsg)
           (and (= type "callback") (= (get smsg 2) "trapped"))
             (do 
               (swap! last-request conj {:trapped true})
