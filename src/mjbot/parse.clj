@@ -47,7 +47,8 @@
     (send-msg room (play-turn request))))
 
 (defn handle-switch [room smsg]
-  (reset! opp-poke (get-poke-from-details (get smsg 3))))
+  (reset! opp-poke (get-poke-from-details (get smsg 3)))
+  (reset! opp-item ""))
 
 (defn handle-opp-status [smsg]
   (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
@@ -71,6 +72,8 @@
           	(if (= (get smsg 2) config/user) (send-msg "" (find-battle)))
           (= type "player")
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
+          (= type "-item")
+            (reset! opp-item (get smsg 3))
            ;if its a switch message, check if its the opponent
           (and (some (partial = type) ["switch" "detailschange" "drag" "-formechange"]) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
           	(handle-switch room smsg)

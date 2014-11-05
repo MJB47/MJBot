@@ -9,8 +9,10 @@
 (def losses (atom 0))
 
 (def who-am-i (atom nil))
+
 (def opp-poke (atom nil)) ;why isnt this given with all the other information from ps??????
 (def opp-status (atom {}))
+(def opp-item (atom ""))
 
 (def last-request (atom nil)) ;bad hack
 
@@ -82,7 +84,8 @@
     (* 
       (type-to-eff (or (type (:damageTaken ((poke-type poke 0) types))) 0))
       (if (poke-type poke 1) (type-to-eff (or (type (:damageTaken ((poke-type poke 1) types))) 0)) 1)
-      (if (ability-immune? type poke) 0 1))))
+      (if (ability-immune? type poke) 0 1)
+      (if (and (= @opp-item "Air Balloon") (= type :Ground)) 0 1))))
 
 ;takes move id
 (defn move-type [move]
