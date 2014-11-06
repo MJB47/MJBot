@@ -28,7 +28,9 @@
 (defn reset-state []
   (reset! who-am-i nil)
   (reset! opp-poke nil)
-  (reset! opp-status {}))
+  (reset! opp-status {})
+  (reset! opp-sub false)
+  (reset! opp-item ""))
 
 (defn update-score [me?]
   (if me? (swap! wins inc) (swap! losses inc)))
@@ -127,13 +129,13 @@
       (off-effectiveness type poke)
       (stab type side))))
 
-(defn stat-atk [poke move stat-boosts]
+(defn stat-atk [poke move boosts]
   (let [category (:category ((keyword move) moves))]
     (if (= "Status" category)
       1
       (if (= "Physical" category)
-        (* (:atk (:baseStats (poke pokedex))) (or (get stat-boosts (:atk stat-boosts)) 1))
-        (* (:spa (:baseStats (poke pokedex))) (or (get stat-boosts (:spa stat-boosts)) 1))))))
+        (* (:atk (:baseStats (poke pokedex))) (or (get stat-boosts (:atk boosts)) 1))
+        (* (:spa (:baseStats (poke pokedex))) (or (get stat-boosts (:spa boosts)) 1))))))
 
 (defn stat-def [poke move]
   (let [category (:category ((keyword move) moves))]
