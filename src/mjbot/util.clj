@@ -16,3 +16,6 @@
     (if (seq m)
       (recur (rest m)
              (conj v (get (first m) 1))))))
+
+(defn parse-int [s]
+   (Integer. (re-find  #"\d+" s)))
