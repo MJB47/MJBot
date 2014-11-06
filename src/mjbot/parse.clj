@@ -70,7 +70,8 @@
 (defn handle-switch [room smsg]
   (reset! opp-poke (get-poke-from-details (get smsg 3)))
   (reset! opp-item "")
-  (reset! opp-sub false))
+  (reset! opp-sub false)
+  (reset! opp-stat-boosts {}))
 
 (defn handle-opp-status [smsg]
   (if (not (= (subs (get smsg 2) 0 2) @who-am-i))
@@ -112,6 +113,8 @@
            ;if its a switch message, check if its the opponent
           (and (some (partial = type) ["switch" "detailschange" "drag" "-formechange"]) (not (= (subs (get smsg 2) 0 2) @who-am-i))) ; this is ugly as hell
             (handle-switch room smsg)
+          (some (partial = type) ["switch" "drag"])
+            (reset! my-stat-boosts {}) ; this will only ever be called if the bot switches
           (and (= type "faint") (not (= (subs (get smsg 2) 0 2) @who-am-i))) ;temporary until refactor
             (reset! opp-poke nil)
           (= type "-status")
