@@ -77,7 +77,7 @@
 (defn ability-immune? [type poke]
   (loop [abilities (get-poke-abilities poke)]
     (if (seq abilities)
-      (if (= ((keyword (first abilities)) immunity-abilities) type)
+      (if (= ((keyword (string-to-id (first abilities))) immunity-abilities) type)
         true
         (recur (rest abilities))))))
 
