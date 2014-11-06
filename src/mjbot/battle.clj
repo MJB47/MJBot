@@ -59,7 +59,7 @@
 
 (defn move-status [move-data]
   (if-not (or ((keyword @opp-poke) @opp-status) (sleep-clause))
-    (if-not @opp-sub 121 0) ;more than a neutral focus blast or w/e
+    (if-not @opp-sub 150 0) ;more than a neutral focus blast or w/e
     0))
 
 (defn move-power [move]
