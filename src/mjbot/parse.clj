@@ -83,7 +83,7 @@
         stat (keyword (get smsg 3))]
     (if boost?
       (swap! user conj {stat (+ (parse-int (get smsg 4)) (or (stat @user) 0))})
-      (swap! user conj {stat (- (parse-int (get smsg 4)) (or (stat @user) 0))}))))
+      (swap! user conj {stat (- (or (stat @user) 0) (parse-int (get smsg 4)))}))))
 
 (defn parse-line [room msg]
   (if-not (or (= msg "") (= msg "|"))
