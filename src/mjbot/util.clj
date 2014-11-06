@@ -15,7 +15,8 @@
          v []]
     (if (seq m)
       (recur (rest m)
-             (conj v (get (first m) 1))))))
+             (conj v (get (first m) 1)))
+      v)))
 
 (defn parse-int [s]
    (Integer. (re-find  #"\d+" s)))
