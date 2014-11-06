@@ -65,7 +65,9 @@
         (= command "!challme")
           (if-not (seq args)
             (chall-user user @config/current-tier)
-            (chall-user user (first args)))))))
+            (chall-user user (first args)))
+        (= command "!exit")
+          (System/exit 0)))))
 
 (defn handle-switch [room smsg]
   (reset! opp-poke (get-poke-from-details (get smsg 3)))
