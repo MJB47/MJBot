@@ -50,16 +50,19 @@
   (get-poke-from-details (:details (first (:pokemon side)))))
 
 ;assume sleep clause is always active for now
+; (defn sleep-clause []
+;   (loop [pokes @opp-status]
+;     (if (seq pokes)
+;       (if (= "slp" (get (first pokes) 1))
+;         true
+;         (recur (rest pokes))))))
+
 (defn sleep-clause []
-  (loop [pokes @opp-status]
-    (if (seq pokes)
-      (if (= "slp" (get (first pokes) 1))
-        true
-        (recur (rest pokes))))))
+  (if (seq (filter #(= (second %) "slp") @opp-status)) true))
 
 (defn move-status [move-data]
   (if-not (or ((keyword @opp-poke) @opp-status) (sleep-clause))
-    (if-not @opp-sub 150 0) ;more than a neutral focus blast or w/e
+    (if-not @opp-sub 130 0) ;more than a neutral focus blast or w/e
     0))
 
 (defn move-power [move]
@@ -175,7 +178,7 @@
       (get-next-poke (rest pokemon) rqid (inc i)))))
 
 (defn good-enough? [power]
-  (>= 100 (:power power)))
+  (>= 80 (:power power)))
 
 (defn good-switch [pokemon rqid i]
   (if-not (:trapped @last-request)
