@@ -110,6 +110,8 @@
           	(if (>= (count smsg) 4) (if (= (get smsg 3) config/user) (set-who-am-i (get smsg 2))))
           (= type "-item")
             (reset! opp-item (get smsg 3))
+          (= type "-enditem")
+            (reset! opp-item "")
           (and (or (= type "-start") (= type "-end")) (= "Substitute" (get smsg 3)))
             (reset! opp-sub (not @opp-sub))
            ;if its a switch message, check if its the opponent
